@@ -1,0 +1,97 @@
+{
+  "origem": "HTTP local por cliente Python",
+  "posts": [
+    {
+      "request": {
+        "event_id": "1",
+        "type": "deposit_detected",
+        "lote_id": "A",
+        "pending_count": 1,
+        "device_id": "safe-http",
+        "uptime_ms": 100
+      },
+      "status": 201
+    },
+    {
+      "request": {
+        "event_id": "2",
+        "type": "deposit_detected",
+        "lote_id": "B",
+        "pending_count": 2,
+        "device_id": "safe-http",
+        "uptime_ms": 200
+      },
+      "status": 201
+    },
+    {
+      "request": {
+        "event_id": "3",
+        "type": "deposit_cancelled",
+        "lote_id": "B",
+        "pending_count": 1,
+        "device_id": "safe-http",
+        "uptime_ms": 300
+      },
+      "status": 201
+    },
+    {
+      "request": {
+        "event_id": "4",
+        "type": "deposit_confirmed",
+        "lote_id": "A",
+        "pending_count": 0,
+        "device_id": "safe-http",
+        "uptime_ms": 400
+      },
+      "status": 201
+    },
+    {
+      "request": {
+        "event_id": "4",
+        "type": "deposit_confirmed",
+        "lote_id": "A",
+        "pending_count": 0,
+        "device_id": "safe-http",
+        "uptime_ms": 400
+      },
+      "status": 200
+    }
+  ],
+  "saldo": {
+    "device_id": "safe-http",
+    "envelopes_confirmados": 1
+  },
+  "auditoria": {
+    "events": [
+      {
+        "event_id": "4",
+        "device_id": "safe-http",
+        "lote_id": "A",
+        "tipo": "deposit_confirmed",
+        "recebido_em": "2026-11-09 20:27:36"
+      },
+      {
+        "event_id": "3",
+        "device_id": "safe-http",
+        "lote_id": "B",
+        "tipo": "deposit_cancelled",
+        "recebido_em": "2026-11-09 20:27:36"
+      },
+      {
+        "event_id": "2",
+        "device_id": "safe-http",
+        "lote_id": "B",
+        "tipo": "deposit_detected",
+        "recebido_em": "2026-11-09 20:27:36"
+      },
+      {
+        "event_id": "1",
+        "device_id": "safe-http",
+        "lote_id": "A",
+        "tipo": "deposit_detected",
+        "recebido_em": "2026-11-09 20:27:36"
+      }
+    ],
+    "count": 4
+  }
+}

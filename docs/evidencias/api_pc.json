@@ -1,0 +1,98 @@
+{
+  "origin": "PC Python urllib; NÃO ESP32",
+  "time_utc": "2026-11-05T22:57:04.083272+00:00",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/health",
+      "body": null,
+      "status": 200,
+      "response": {
+        "status": "ok",
+        "module": "ByteBank Safe",
+        "sprint": 2
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/events",
+      "body": {
+        "event_id": "pc-validation-20261105-01",
+        "device_id": "pc-test",
+        "type": "deposit_detected",
+        "pending_count": 1,
+        "lote_id": "pc-lote-01",
+        "uptime_ms": 1000
+      },
+      "status": 201,
+      "response": {
+        "status": "received",
+        "event_id": "pc-validation-20261105-01"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/events",
+      "body": {
+        "event_id": "pc-validation-20261105-01",
+        "device_id": "pc-test",
+        "type": "deposit_detected",
+        "pending_count": 1,
+        "lote_id": "pc-lote-01",
+        "uptime_ms": 1000
+      },
+      "status": 200,
+      "response": {
+        "status": "duplicate",
+        "event_id": "pc-validation-20261105-01"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/events",
+      "body": {
+        "invalid": true
+      },
+      "status": 400,
+      "response": {
+        "error": "event_id, device_id e type são obrigatórios"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/events",
+      "body": {
+        "event_id": "pc-validation-20261105-01",
+        "device_id": "pc-test",
+        "type": "invalid",
+        "pending_count": 1,
+        "lote_id": "pc-lote-01",
+        "uptime_ms": 1000
+      },
+      "status": 422,
+      "response": {
+        "error": "Tipo de evento inválido"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/events",
+      "body": null,
+      "status": 200,
+      "response": {
+        "events": [
+          {
+            "event_id": "pc-validation-20261105-01",
+            "device_id": "pc-test",
+            "type": "deposit_detected",
+            "pending_count": 1,
+            "lote_id": "pc-lote-01",
+            "uptime_ms": 1000,
+            "received_at_utc": "2026-11-05T22:57:04.088849+00:00"
+          }
+        ],
+        "count": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+Origem: terminal Wokwi 05/11/2026. Tentativa real para hostname local antes da guarda IPv4 final. Espera longa e erro -202; NÃO comprova recebimento no servidor. Cliente final rejeita hostname antes de tentar DNS.
+
+entry 0x400805a8
+Conectando Wi-Fi...
+Wi-Fi conectado, IP: 10.10.0.2
+ByteBank Safe iniciado | simulacao: True
+HTTP habilitado: True
+EVENTO: {"uptime_ms": 17388, "device_id": "safe-wokwi-01", "lote_
+id": "safe-wokwi-01-lote-17386-1", "event_id": "safe-wokwi-01-173
+87-1", "pending_count": 1, "type": "deposit_detected"}
+PUSH: safe-wokwi-01-lote-17386-1 | Pilha: 1
+Servidor indisponível (evento preservado): -202
+ 

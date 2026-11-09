@@ -1,0 +1,83 @@
+test_empty_events (test_api.TestSafeAPI.test_empty_events) ... ok
+test_invalid_payload (test_api.TestSafeAPI.test_invalid_payload) ... ok
+test_invalid_type (test_api.TestSafeAPI.test_invalid_type) ... ok
+test_receive_and_deduplicate (test_api.TestSafeAPI.test_receive_and_deduplicate) ... EVENTO RECEBIDO: {'event_id': 'safe-01-1', 'device_id': 'safe-01', 'type': 'deposit_detected', 'pending_count': 1, 'lote_id': 'lote-1', 'received_at_utc': '2026-11-05T23:05:58.619028+00:00'}
+ok
+test_button_bounce_hold_and_repress (test_firmware.TestFirmware.test_button_bounce_hold_and_repress) ... ok
+test_disconnected_does_not_send (test_firmware.TestFirmware.test_disconnected_does_not_send) ... ok
+test_empty_and_stack_limit (test_firmware.TestFirmware.test_empty_and_stack_limit) ... ok
+test_failed_http_retains_event_and_success_removes (test_firmware.TestFirmware.test_failed_http_retains_event_and_success_removes) ... ok
+test_full_queue_preserves_stack (test_firmware.TestFirmware.test_full_queue_preserves_stack) ... ok
+test_hostname_rejected_before_dns (test_firmware.TestFirmware.test_hostname_rejected_before_dns) ... ok
+test_lifo_and_confirmation_count (test_firmware.TestFirmware.test_lifo_and_confirmation_count) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.004s
+
+OK
+EVENTO: {"event_id": "test-safe-1000-1", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 1, "lote_id": "test-safe-lote-1000-1", "uptime_ms": 1000}
+PUSH: test-safe-lote-1000-1 | Pilha: 1
+Pilha vazia: nada a cancelar
+Sem depósitos pendentes
+EVENTO: {"event_id": "test-safe-1001-1", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 1, "lote_id": "test-safe-lote-1001-1", "uptime_ms": 1001}
+PUSH: test-safe-lote-1001-1 | Pilha: 1
+EVENTO: {"event_id": "test-safe-1002-2", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 2, "lote_id": "test-safe-lote-1002-2", "uptime_ms": 1002}
+PUSH: test-safe-lote-1002-2 | Pilha: 2
+EVENTO: {"event_id": "test-safe-1003-3", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 3, "lote_id": "test-safe-lote-1003-3", "uptime_ms": 1003}
+PUSH: test-safe-lote-1003-3 | Pilha: 3
+EVENTO: {"event_id": "test-safe-1004-4", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 4, "lote_id": "test-safe-lote-1004-4", "uptime_ms": 1004}
+PUSH: test-safe-lote-1004-4 | Pilha: 4
+EVENTO: {"event_id": "test-safe-1005-5", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 5, "lote_id": "test-safe-lote-1005-5", "uptime_ms": 1005}
+PUSH: test-safe-lote-1005-5 | Pilha: 5
+EVENTO: {"event_id": "test-safe-1006-6", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 6, "lote_id": "test-safe-lote-1006-6", "uptime_ms": 1006}
+PUSH: test-safe-lote-1006-6 | Pilha: 6
+EVENTO: {"event_id": "test-safe-1007-7", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 7, "lote_id": "test-safe-lote-1007-7", "uptime_ms": 1007}
+PUSH: test-safe-lote-1007-7 | Pilha: 7
+EVENTO: {"event_id": "test-safe-1008-8", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 8, "lote_id": "test-safe-lote-1008-8", "uptime_ms": 1008}
+PUSH: test-safe-lote-1008-8 | Pilha: 8
+EVENTO: {"event_id": "test-safe-1009-9", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 9, "lote_id": "test-safe-lote-1009-9", "uptime_ms": 1009}
+PUSH: test-safe-lote-1009-9 | Pilha: 9
+EVENTO: {"event_id": "test-safe-1010-10", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 10, "lote_id": "test-safe-lote-1010-10", "uptime_ms": 1010}
+PUSH: test-safe-lote-1010-10 | Pilha: 10
+EVENTO: {"event_id": "test-safe-1011-11", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 11, "lote_id": "test-safe-lote-1011-11", "uptime_ms": 1011}
+PUSH: test-safe-lote-1011-11 | Pilha: 11
+EVENTO: {"event_id": "test-safe-1012-12", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 12, "lote_id": "test-safe-lote-1012-12", "uptime_ms": 1012}
+PUSH: test-safe-lote-1012-12 | Pilha: 12
+EVENTO: {"event_id": "test-safe-1013-13", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 13, "lote_id": "test-safe-lote-1013-13", "uptime_ms": 1013}
+PUSH: test-safe-lote-1013-13 | Pilha: 13
+EVENTO: {"event_id": "test-safe-1014-14", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 14, "lote_id": "test-safe-lote-1014-14", "uptime_ms": 1014}
+PUSH: test-safe-lote-1014-14 | Pilha: 14
+EVENTO: {"event_id": "test-safe-1015-15", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 15, "lote_id": "test-safe-lote-1015-15", "uptime_ms": 1015}
+PUSH: test-safe-lote-1015-15 | Pilha: 15
+EVENTO: {"event_id": "test-safe-1016-16", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 16, "lote_id": "test-safe-lote-1016-16", "uptime_ms": 1016}
+PUSH: test-safe-lote-1016-16 | Pilha: 16
+EVENTO: {"event_id": "test-safe-1017-17", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 17, "lote_id": "test-safe-lote-1017-17", "uptime_ms": 1017}
+PUSH: test-safe-lote-1017-17 | Pilha: 17
+EVENTO: {"event_id": "test-safe-1018-18", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 18, "lote_id": "test-safe-lote-1018-18", "uptime_ms": 1018}
+PUSH: test-safe-lote-1018-18 | Pilha: 18
+EVENTO: {"event_id": "test-safe-1019-19", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 19, "lote_id": "test-safe-lote-1019-19", "uptime_ms": 1019}
+PUSH: test-safe-lote-1019-19 | Pilha: 19
+EVENTO: {"event_id": "test-safe-1020-20", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 20, "lote_id": "test-safe-lote-1020-20", "uptime_ms": 1020}
+PUSH: test-safe-lote-1020-20 | Pilha: 20
+Limite de lotes atingido
+EVENTO: {"event_id": "test-safe-1000-1", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 1, "lote_id": "test-safe-lote-1000-1", "uptime_ms": 1000}
+PUSH: test-safe-lote-1000-1 | Pilha: 1
+HTTP falhou (evento preservado): 503
+HTTP OK: 201 test-safe-1000-1
+EVENTO: {"event_id": "test-safe-1000-1", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 1, "lote_id": "test-safe-lote-1000-1", "uptime_ms": 1000}
+PUSH: test-safe-lote-1000-1 | Pilha: 1
+Fila HTTP cheia: cancelamento indisponível
+AVISO: fila HTTP cheia; evento não enfileirado: deposit_confirmed
+Sem espaço para registrar confirmação; operação mantida pendente
+Fila HTTP cheia: envelope não registrado
+EVENTO: {"event_id": "test-safe-1000-1", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 1, "lote_id": "test-safe-lote-1000-1", "uptime_ms": 1000}
+PUSH: test-safe-lote-1000-1 | Pilha: 1
+Servidor indisponível (evento preservado): API_URL exige IPv4 numerico do PC; hostname DNS nao suportado
+EVENTO: {"event_id": "test-safe-1000-1", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 1, "lote_id": "test-safe-lote-1000-1", "uptime_ms": 1000}
+PUSH: test-safe-lote-1000-1 | Pilha: 1
+EVENTO: {"event_id": "test-safe-1001-2", "device_id": "test-safe", "type": "deposit_detected", "pending_count": 2, "lote_id": "test-safe-lote-1001-2", "uptime_ms": 1001}
+PUSH: test-safe-lote-1001-2 | Pilha: 2
+EVENTO: {"event_id": "test-safe-1001-3", "device_id": "test-safe", "type": "deposit_cancelled", "pending_count": 1, "lote_id": "test-safe-lote-1001-2", "uptime_ms": 1001}
+POP: test-safe-lote-1001-2
+EVENTO: {"event_id": "test-safe-1001-4", "device_id": "test-safe", "type": "deposit_confirmed", "pending_count": 0, "lote_id": "test-safe-lote-1000-1", "uptime_ms": 1001}
+CONFIRMADO localmente (não é crédito bancário): test-safe-lote-1000-1

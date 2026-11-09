@@ -1,0 +1,13 @@
+# Credenciais locais
+esp32/config.py
+**/.env
+# Arquivos gerados
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+server/events.jsonl
+.DS_Store
+
+*.sqlite3
+*.sqlite3-*

@@ -1,0 +1,212 @@
+{
+  "version": 1,
+  "author": "ByteBank Safe equipe",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": 40,
+      "left": 10,
+      "attrs": {
+        "env": "micropython-20260406-v1.28.0"
+      }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btnAdd",
+      "top": 30,
+      "left": 350,
+      "attrs": {
+        "color": "green",
+        "label": "ENVELOPE",
+        "key": "E",
+        "bounce": "0"
+      }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btnCancel",
+      "top": 140,
+      "left": 350,
+      "attrs": {
+        "color": "red",
+        "label": "CANCELAR",
+        "key": "C",
+        "bounce": "0"
+      }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btnConfirm",
+      "top": 250,
+      "left": 350,
+      "attrs": {
+        "color": "blue",
+        "label": "CONFIRMAR",
+        "key": "F",
+        "bounce": "0"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledOk",
+      "left": 365,
+      "top": 385,
+      "attrs": {
+        "color": "green",
+        "label": "OK"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledAlert",
+      "left": 365,
+      "top": 455,
+      "attrs": {
+        "color": "red",
+        "label": "ALERTA"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "res0",
+      "top": 395,
+      "left": 305,
+      "attrs": {
+        "value": "330"
+      },
+      "rotate": 90
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "res1",
+      "top": 465,
+      "left": 305,
+      "attrs": {
+        "value": "330"
+      },
+      "rotate": 90
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "sonar",
+      "top": 365,
+      "left": -190,
+      "attrs": {
+        "distance": "200"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "btnAdd:1.l",
+      "esp:27",
+      "green",
+      []
+    ],
+    [
+      "btnAdd:2.l",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "btnCancel:1.l",
+      "esp:14",
+      "green",
+      []
+    ],
+    [
+      "btnCancel:2.l",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "btnConfirm:1.l",
+      "esp:15",
+      "green",
+      []
+    ],
+    [
+      "btnConfirm:2.l",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "esp:2",
+      "res0:1",
+      "green",
+      []
+    ],
+    [
+      "res0:2",
+      "ledOk:A",
+      "green",
+      []
+    ],
+    [
+      "ledOk:C",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "esp:4",
+      "res1:1",
+      "green",
+      []
+    ],
+    [
+      "res1:2",
+      "ledAlert:A",
+      "green",
+      []
+    ],
+    [
+      "ledAlert:C",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "sonar:VCC",
+      "esp:5V",
+      "red",
+      []
+    ],
+    [
+      "sonar:GND",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "sonar:TRIG",
+      "esp:5",
+      "orange",
+      []
+    ],
+    [
+      "sonar:ECHO",
+      "esp:18",
+      "blue",
+      []
+    ],
+    [
+      "esp:TX",
+      "$serialMonitor:RX",
+      "",
+      []
+    ],
+    [
+      "esp:RX",
+      "$serialMonitor:TX",
+      "",
+      []
+    ]
+  ],
+  "dependencies": {}
+}
