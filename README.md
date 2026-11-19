@@ -2,7 +2,7 @@
 
 **Disciplina:** BD015 — Algoritmo e Estrutura de Dados | **Módulo 3**
 
-**Aluno:** Zion Pedro Silva
+**Equipe:** Zion Pedro Silva e Gabriel Costa
 
 ## Entregas parciais
 
