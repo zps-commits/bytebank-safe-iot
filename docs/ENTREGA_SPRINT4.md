@@ -1,6 +1,6 @@
 # Entrega Parcial 4 — Dashboard Streamlit e integração
 
-Aluno: Zion Pedro Silva. Módulo 3 — ByteBank Safe. Revisão: 19/11/2026.
+Equipe: Zion Pedro Silva e Gabriel Costa. Módulo 3 — ByteBank Safe. Revisão: 19/11/2026.
 
 ## Checklist e alcance da prova
 
