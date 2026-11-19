@@ -1,0 +1,38 @@
+{
+  "origin": "Integração PC: HTTP real, SQLite e Streamlit AppTest; GPIO e rede da ESP32 substituídos. Não é bancada física.",
+  "steps": [
+    {
+      "step": "firmware_events",
+      "queue": 0,
+      "pending": 0,
+      "counter": 2
+    },
+    {
+      "step": "streamlit_button",
+      "command": {
+        "command_id": "9056c2db-dd57-47e5-828b-a23fdfda52bc",
+        "device_id": "test-safe",
+        "action": "reset_counter"
+      },
+      "metrics": {
+        "Pendentes no banco": "0",
+        "Confirmados no banco": "1",
+        "Cancelados no banco": "1",
+        "Contador de diagnóstico": "2"
+      }
+    },
+    {
+      "step": "ack_visible_in_database_and_dashboard",
+      "status": "applied",
+      "counter": 0,
+      "audit_events": 4
+    },
+    {
+      "step": "api_offline",
+      "dashboard_crashed": false,
+      "send_error_visible": true
+    }
+  ],
+  "result": "PASSOU",
+  "time_utc": "2026-11-19T23:23:49.498827+00:00"
+}

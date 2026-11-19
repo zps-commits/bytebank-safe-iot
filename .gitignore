@@ -11,3 +11,7 @@ server/events.jsonl
 
 *.sqlite3
 *.sqlite3-*
+
+command_ack_cache.json
+**/command_ack_cache.json
+.streamlit/secrets.toml

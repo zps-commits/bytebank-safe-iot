@@ -1,4 +1,4 @@
-"""ByteBank Safe — Sprint 2: pilha LIFO, detecção de envelope e telemetria HTTP.
+"""ByteBank Safe — Sprint 4: dashboard, comandos, pilha LIFO, detecção de envelope e telemetria HTTP.
 
 Não movimenta dinheiro nem aciona uma fechadura real por padrão.
 """
@@ -6,6 +6,11 @@ import time
 import machine
 import network
 import config
+import _thread
+try:
+    from command_state import DiagnosticCounter
+except ImportError:
+    from esp32.command_state import DiagnosticCounter
 import ujson
 try:
     import urequests
@@ -30,12 +35,23 @@ pendentes = []
 fila_http = []
 MAX_EVENTS = 50
 next_seq = 0
+state_lock = _thread.allocate_lock()
+diagnostic = DiagnosticCounter()
+latest_distance = None
+# Nonce de boot evita repetir IDs baseados apenas no uptime após reinício.
+import os
+try:
+    import ubinascii as binascii
+except ImportError:
+    import binascii
+SESSION_ID = binascii.hexlify(os.urandom(6)).decode()
+
 
 def event(kind, lote=None, extra=None):
     global next_seq
     next_seq += 1
     payload = {
-        'event_id': '%s-%d-%d' % (DEVICE_ID, time.ticks_ms(), next_seq),
+        'event_id': '%s-%s-%d-%d' % (DEVICE_ID, SESSION_ID, time.ticks_ms(), next_seq),
         'device_id': DEVICE_ID,
         'type': kind,
         'pending_count': len(pendentes),
@@ -72,7 +88,7 @@ def registrar_envelope():
         print('Limite de lotes atingido')
         LED_ALERT.value(1)
         return
-    lote_id = '%s-lote-%d-%d' % (DEVICE_ID, time.ticks_ms(), len(pendentes) + 1)
+    lote_id = '%s-%s-lote-%d' % (DEVICE_ID, SESSION_ID, next_seq + 1)
     # Não altera pilha se não houver capacidade para registrar o evento.
     if len(fila_http) >= MAX_EVENTS:
         print('Fila HTTP cheia: envelope não registrado')
@@ -80,6 +96,7 @@ def registrar_envelope():
         return
     pendentes.append(lote_id)
     event('deposit_detected', lote_id)
+    diagnostic.detected()
     LED_OK.value(1)
     print('PUSH:', lote_id, '| Pilha:', len(pendentes))
 
@@ -112,6 +129,8 @@ def confirmar_lote():
 def enviar_proximo():
     if not fila_http or not network.WLAN(network.STA_IF).isconnected():
         return
+    with state_lock:
+        payload = fila_http[0]
     response = None
     try:
         # DNS pode bloquear além do timeout de socket. Nesta sprint, use IPv4
@@ -122,11 +141,12 @@ def enviar_proximo():
         octets = host.split('.')
         if len(octets) != 4 or not all(part.isdigit() and 0 <= int(part) <= 255 for part in octets):
             raise ValueError('API_URL exige IPv4 numerico do PC; hostname DNS nao suportado')
-        response = urequests.post(API_URL, data=ujson.dumps(fila_http[0]),
-                                  headers={'Content-Type': 'application/json'}, timeout=2)
+        response = urequests.post(API_URL, data=ujson.dumps(payload),
+                                  headers={'Content-Type': 'application/json', 'X-API-Key': getattr(config, 'API_KEY', '')}, timeout=2)
         if 200 <= response.status_code < 300:
-            print('HTTP OK:', response.status_code, fila_http[0]['event_id'])
-            fila_http.pop(0)
+            print('HTTP OK:', response.status_code, payload['event_id'])
+            with state_lock:
+                fila_http.pop(0)
             if not fila_http:
                 LED_ALERT.value(0)
         else:
@@ -138,6 +158,67 @@ def enviar_proximo():
     finally:
         if response is not None:
             response.close()
+
+def server_request(method, path, body=None):
+    # Nunca resolve hostname no loop de rede; configuração local deve usar IPv4.
+    if not API_URL.startswith('http://'):
+        raise ValueError('API_URL deve usar IPv4 HTTP na LAN')
+    host=API_URL[7:].split('/',1)[0].split(':',1)[0]
+    if len(host.split('.'))!=4 or not all(p.isdigit() and 0<=int(p)<=255 for p in host.split('.')):
+        raise ValueError('API_URL exige IPv4 numerico')
+    base=API_URL.rsplit('/',1)[0]
+    headers={'Content-Type':'application/json'}
+    token=getattr(config,'API_KEY','')
+    if token: headers['X-API-Key']=token
+    response=None
+    try:
+        if method=='GET':
+            response=urequests.get(base+path,headers=headers,timeout=2)
+        else:
+            response=urequests.post(base+path,headers=headers,data=ujson.dumps(body),timeout=2)
+        if not 200<=response.status_code<300:
+            raise OSError('HTTP '+str(response.status_code))
+        return response.json()
+    finally:
+        if response is not None: response.close()
+
+
+def telemetry_snapshot():
+    with state_lock:
+        return {'device_id':DEVICE_ID,'uptime_ms':time.ticks_ms(),
+                'pending_count':len(pendentes),'diagnostic_count':diagnostic.count,
+                'queue_size':len(fila_http),'distance_cm':latest_distance,
+                'source':'esp32_buttons' if SIMULATE_ENVELOPE else 'esp32_sensor'}
+
+
+def sync_once():
+    enviar_proximo()
+    server_request('POST','/telemetry',telemetry_snapshot())
+    command=server_request('GET','/commands/'+DEVICE_ID+'/next').get('command')
+    if command:
+        with state_lock:
+            ack=diagnostic.apply(command,DEVICE_ID)
+        server_request('POST','/commands/'+command['command_id']+'/ack',ack)
+        server_request('POST','/telemetry',telemetry_snapshot())
+
+
+def network_worker():
+    wlan=network.WLAN(network.STA_IF)
+    last_wifi=time.ticks_add(time.ticks_ms(),-10000)
+    while True:
+        try:
+            now=time.ticks_ms()
+            if not wlan.isconnected():
+                if time.ticks_diff(now,last_wifi)>=10000:
+                    last_wifi=now
+                    wlan.active(True)
+                    wlan.connect(config.WIFI_SSID,config.WIFI_PASSWORD)
+            elif getattr(config,'HTTP_ENABLED',True):
+                sync_once()
+        except Exception as exc:
+            print('Rede indisponivel; leitura local continua:',exc)
+        time.sleep_ms(1000)
+
 
 class DebouncedButton:
     """Estado estável por botão; pressionar só dispara uma vez até soltar."""
@@ -159,10 +240,9 @@ class DebouncedButton:
 
 
 def run():
+    global latest_distance
+    _thread.start_new_thread(network_worker, ())
     buttons = [DebouncedButton(pin) for pin in (BTN_ENVELOPE, BTN_CANCEL, BTN_CONFIRM)]
-    wlan = network.WLAN(network.STA_IF)
-    last_wifi = time.ticks_add(time.ticks_ms(), -10000)
-    last_http = time.ticks_ms()
     last_sensor = time.ticks_ms()
     occupied = False
     print('ByteBank Safe iniciado | simulacao:', SIMULATE_ENVELOPE)
@@ -174,6 +254,7 @@ def run():
         if not SIMULATE_ENVELOPE and time.ticks_diff(now, last_sensor) >= 80:
             last_sensor = now
             distance = medir_distancia_cm()
+            latest_distance = distance
             # Sem eco não rearma o sensor: evita duplicar envelope após timeout.
             if distance is not None:
                 if distance < 10 and not occupied:
@@ -181,25 +262,16 @@ def run():
                     occupied = True
                 elif distance > 12:
                     occupied = False
-        if detected:
-            registrar_envelope()
-        if hit_cancel:
-            cancelar_ultimo()
-        if hit_confirm:
-            confirmar_lote()
-        if not wlan.isconnected() and time.ticks_diff(now, last_wifi) >= 10000:
-            last_wifi = now
-            try:
-                wlan.active(True)
-                wlan.connect(config.WIFI_SSID, config.WIFI_PASSWORD)
-                print('Tentativa de reconexão Wi-Fi')
-            except OSError as exc:
-                print('Wi-Fi indisponível:', exc)
-        if getattr(config, 'HTTP_ENABLED', True) and time.ticks_diff(now, last_http) >= 5000:
-            last_http = now
-            enviar_proximo()
+        with state_lock:
+            if detected:
+                registrar_envelope()
+            if hit_cancel:
+                cancelar_ultimo()
+            if hit_confirm:
+                confirmar_lote()
         time.sleep_ms(10)
 
 
 if __name__ == '__main__':
     run()
+

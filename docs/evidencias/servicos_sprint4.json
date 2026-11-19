@@ -1,0 +1,10 @@
+{
+  "time_utc": "2026-11-19T23:23:59.008816+00:00",
+  "origin": "PC; três processos reais (Uvicorn, Streamlit e simulador). Não é hardware físico.",
+  "api_health": 200,
+  "streamlit_health": 200,
+  "source": "simulator_pc",
+  "command_status": "applied",
+  "diagnostic_count": 0,
+  "result": "PASSOU"
+}

@@ -13,3 +13,7 @@ RELAY_ACTIVE_LEVEL = 0
 
 # False permite testar a pilha offline; a fila permanece em RAM.
 HTTP_ENABLED = True
+
+
+# Opcional: mesmo SAFE_API_KEY configurado no computador, apenas LAN.
+API_KEY = ''

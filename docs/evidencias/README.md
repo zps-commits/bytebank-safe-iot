@@ -10,3 +10,11 @@
 - testes_pc.txt: saída da suíte de 11 testes; firmware usa periféricos substituídos no PC.
 
 O circuito físico, foto/GIF, POST do ESP32 físico e credenciais de bancada não estão presentes nem foram simulados como evidência física. Os screenshots não são prova de bancada real. O endpoint final exige IPv4 e o Wokwi público é salvo com HTTP desligado.
+
+## Parcial 4 — 19/11/2026
+
+- `testes_sprint4.txt`: execução real de 19 testes no PC.
+- `e2e_sprint4.json`: Streamlit AppTest → API HTTP real → ciclo de rede do firmware no PC → ACK → SQLite → painel; também verifica API indisponível.
+- `servicos_sprint4.json`: inicialização da API, Streamlit e simulador de PC em processos separados.
+
+GPIO e Wi-Fi físicos não foram acessados; a prova da integração completa na placa continua pendente. Não substituir vídeo de bancada por esses arquivos.

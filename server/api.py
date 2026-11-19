@@ -3,13 +3,14 @@ from contextlib import asynccontextmanager, closing
 import os
 from pathlib import Path
 import sqlite3
-from typing import Annotated
 
-from fastapi import FastAPI, HTTPException, Response
-from pydantic import BaseModel, Field, StringConstraints
+from fastapi import FastAPI, HTTPException, Response, Request
+from fastapi.responses import JSONResponse
+import secrets
+from pydantic import BaseModel, Field
+from server.api_types import IDENTIFIER
 
 SCHEMA = Path(__file__).resolve().parents[1] / "schema.sql"
-IDENTIFIER = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=128)]
 # Busca em tabela hash por tipo de evento, O(1) esperado.
 TRANSITIONS = {
     "deposit_detected": (None, "pendente"),
@@ -40,14 +41,22 @@ def create_app(path=None):
     @asynccontextmanager
     async def lifespan(app):
         with closing(connect(db_path)) as db:
+            db.execute("PRAGMA journal_mode=WAL")
             db.executescript(SCHEMA.read_text(encoding="utf-8"))
         yield
 
-    app = FastAPI(title="ByteBank Safe", version="3.0", lifespan=lifespan)
+    app = FastAPI(title="ByteBank Safe", version="4.0", lifespan=lifespan)
+
+    @app.middleware("http")
+    async def laboratory_key(request: Request, call_next):
+        key=os.environ.get('SAFE_API_KEY','')
+        if key and request.url.path != '/health' and not secrets.compare_digest(request.headers.get('X-API-Key',''),key):
+            return JSONResponse({'detail':'Chave de laboratorio invalida'},status_code=401)
+        return await call_next(request)
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "module": "ByteBank Safe", "sprint": 3}
+        return {"status": "ok", "module": "ByteBank Safe", "sprint": 4}
 
     @app.post("/events", status_code=201, responses={200: {"description": "Evento já recebido"}})
     def post_event(event: Event, response: Response):
@@ -105,7 +114,10 @@ def create_app(path=None):
             raise HTTPException(404, "Dispositivo sem saldo cadastrado")
         return {"device_id": device_id, "envelopes_confirmados": row["envelopes_confirmados"]}
 
+    from server.sprint4 import register_routes
+    register_routes(app, db_path, connect)
     return app
 
 
 app = create_app()
+

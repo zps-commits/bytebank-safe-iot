@@ -10,9 +10,29 @@
 |---|---|
 | 1 · Repositório e arquitetura | [Arquitetura em blocos](docs/arquitetura.md), [boot.py](esp32/boot.py), [evidências](docs/evidencias/README.md) |
 | 2 · MicroPython e estruturas em memória | [Firmware](esp32/main.py), [relatório e bancada](docs/ENTREGA_SPRINT2.md), [Wokwi](https://wokwi.com/projects/479892016343212033) |
+| 4 · Dashboard e integração | [Streamlit](dashboard/app.py), [guia detalhado](docs/ENTREGA_SPRINT4.md), [teste integrado](docs/evidencias/e2e_sprint4.json) |
 | 3 · API e banco relacional | [FastAPI](server/api.py), [schema.sql](schema.sql), [execução e validação](docs/ENTREGA_SPRINT3.md) |
 
 **Bancada física:** o botão em GPIO27 com pull-up interno funcionou em teste isolado, conforme registrado pelo aluno. A foto ou o GIF do circuito completo e a confirmação do POST da placa permanecem pendentes.
+
+## Executar a Parcial 4 (versão atual)
+
+O dashboard lê SQLite, atualiza telemetria a cada 2 s e envia `reset_counter` ao dispositivo com confirmação de execução. O reset zera apenas um contador de diagnóstico, preservando a pilha e a auditoria.
+
+```bash
+python -m pip install -r requirements.txt
+python -m uvicorn server.api:app --host 0.0.0.0 --port 8000
+# Em outro terminal, na mesma pasta:
+python -m streamlit run dashboard/app.py --server.address 127.0.0.1
+# Opcional, em um terceiro terminal (dados explicitamente simulados):
+python tools/simulate_device.py
+```
+
+Abra `http://localhost:8501`. Para a placa, copie os quatro arquivos `config.py`, `boot.py`, `main.py` e `command_state.py` para a raiz da ESP32. Configure o IPv4 real do PC em API_URL. [Passo a passo para iniciantes, comandos Windows e prova física](docs/ENTREGA_SPRINT4.md).
+
+**Validação atual:** 19 testes passaram, incluindo Streamlit AppTest → API HTTP real → ciclo de comandos do firmware executado no PC → ACK → SQLite → dashboard. A integração física completa permanece pendente. A rede foi movida para uma thread separada da leitura dos botões. Saldo é quantidade de envelopes, nunca dinheiro.
+
+**Importante:** os exemplos abaixo com `python -m server.app` e JSONL são históricos da Sprint 2. Para as Parciais 3 e 4 use **`server.api:app`**, que é a API FastAPI com SQLite e comandos. Não execute ambos na porta 8000.
 
 ## Objetivo
 Detectar a entrada de envelopes no cofre, controlar lotes pendentes em uma **Pilha LIFO** (último a entrar, primeiro a cancelar), acionar LEDs e transmitir eventos via **HTTP POST + JSON** a um servidor Python de teste.
@@ -56,12 +76,11 @@ Detectar a entrada de envelopes no cofre, controlar lotes pendentes em uma **Pil
 
 ```mermaid
 flowchart TD
-  A[ESP32: sensor + botões] --> B[Pilha LIFO em RAM]
-  B --> C[POST JSON via Wi-Fi]
-  C --> D[Servidor HTTP Python]
-  D --> E[Log JSONL de teste]
-  D -. Sprint 3 .-> F[(SQLite/PostgreSQL)]
-  F -. Sprint 4 .-> G[Streamlit]
+  A["ESP32: botões e sensor"] -->|"Eventos e telemetria"| B["FastAPI"]
+  B --> C[("SQLite")]
+  C -->|"Consulta a cada 2 s"| D["Streamlit"]
+  D -->|"Criar comando"| B
+  A -->|"Buscar comando e enviar ACK"| B
 ```
 
 Veja [detalhamento](docs/arquitetura.md).
@@ -182,7 +201,7 @@ A pasta [`wokwi/`](wokwi/) contém `diagram.json` (componentes e fios), `main.py
 
 ### Limitações confirmadas e limites do teste
 
-O POST é síncrono: pode atrasar a leitura de entradas durante uma tentativa. O timeout de 2 s limita a operação de socket quando suportado pelo firmware. A revisão final aceita IPv4 numérico para não executar DNS no loop. Não há captura garantida de toques muito curtos durante HTTP. Reconexão foi implementada e revisada, mas não foi provocado um corte do Wi-Fi virtual. Não há confirmação do servidor para crédito: a confirmação do botão é local. A API usa busca linear no JSONL e não autentica usuários; não expor à internet. Pilha, fila e identificadores não são duráveis após reboot. Próximas sprints: SQL/idempotência mais robusta, transações e Streamlit.
+Na revisão da Sprint 2, o POST era síncrono no loop dos botões. Na Sprint 4, rede e reconexão estão em thread separada; a estabilidade deve ser validada na placa. O timeout de 2 s limita a operação de socket quando suportado pelo firmware. A revisão final aceita IPv4 numérico para não executar DNS no loop. Não há captura garantida de toques muito curtos durante HTTP. Reconexão foi implementada e revisada, mas não foi provocado um corte do Wi-Fi virtual. Não há confirmação do servidor para crédito: a confirmação do botão é local. A API histórica `server.app` usa busca linear no JSONL e não autentica usuários; não expor à internet. Pilha, fila e identificadores não são duráveis após reboot. SQL e Streamlit foram acrescentados nas Parciais 3 e 4; consulte o guia atual no início deste README.
 
 ## Lista de materiais
 
@@ -205,3 +224,4 @@ Revisão, ajustes de código, automação da interface Wokwi, testes e organiza�
 ### DNS e endpoint desta revisão
 
 A tentativa real no Wokwi com `host.wokwi.internal` ficou bloqueada na resolução/conexão e só depois registrou `Servidor indisponível (evento preservado): -202`. Para evitar DNS no loop, o cliente final valida um IPv4 numérico em URL HTTP e mantém o evento na fila quando a configuração usa hostname. Na bancada use `http://IP-LAN-DO-PC:8000/events`. O endereço antigo do Wokwi é apenas marcador: com `HTTP_ENABLED=False` não é usado. Habilitá-lo com esse hostname agora produz erro local explícito, sem efetuar POST. A requisição síncrona ao IPv4 continua sujeita ao timeout de socket de 2 segundos e pode atrasar leituras. HTTPS e hostnames exigem projeto de rede posterior.
+
