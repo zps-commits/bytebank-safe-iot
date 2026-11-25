@@ -10,7 +10,7 @@ Equipe: Zion Pedro Silva e Gabriel Costa. Módulo 3 — ByteBank Safe. Revisão:
 | Telemetria em tempo real | Firmware publica `/telemetry`; fragmento do Streamlit consulta a cada 2 s | Ciclo do firmware executado no PC, com HTTP real e GPIO substituído |
 | Dashboard → ESP32 | Botão cria `reset_counter`; firmware consulta, executa e envia ACK | Botão real do AppTest → HTTP → lógica do firmware → SQLite → métricas |
 | Fluxo sem travamentos | Rede em thread separada no firmware, timeout HTTP, consultas curtas e tratamento de indisponibilidade no painel | 19 testes passaram; API desligada não derrubou o dashboard |
-| Integração com ESP32 física | ESP32 DevKit de 30 pinos com HC-SR04, botões e LEDs | Validada em bancada em 25/11/2026. Veja [o registro](evidencias/bancada-2026-11-25.md). Gravação contínua da versão final pendente. |
+| Integração com ESP32 física | ESP32 DevKit de 30 pinos com HC-SR04, botões e LEDs | Validada em bancada em 25/11/2026. Veja [o registro e o roteiro presencial](evidencias/bancada-2026-11-25.md). |
 
 O teste no PC não é prova física de LEDs, sensor, rede escolar ou escalonamento das threads na ESP32. Não afirmar que a entrega está totalmente validada em bancada antes da demonstração abaixo.
 

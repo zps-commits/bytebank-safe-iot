@@ -9,17 +9,41 @@ from urllib.error import URLError
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 import pandas as pd
 import streamlit as st
+import altair as alt
 from dashboard.data import snapshot, send_command
 
 st.set_page_config(page_title='ByteBank Safe', page_icon='📦', layout='wide')
 st.title('ByteBank Safe')
-st.caption('Parcial 4 · Telemetria, banco relacional e comandos remotos')
+st.caption('Monitoramento da ESP32 · Envelopes, sensor e comandos remotos')
 DB=os.environ.get('SAFE_DB','bytebank-safe.sqlite3')
 BASE=os.environ.get('SAFE_API_BASE','http://127.0.0.1:8000')
 st.sidebar.header('Conexão local')
 st.sidebar.caption('Banco SQLite: '+str(Path(DB).resolve()))
 st.sidebar.caption('API: '+BASE)
 st.sidebar.info('Dados atualizados a cada 2 s enquanto esta página estiver aberta. Sem valores financeiros.')
+
+def show_distance(history):
+    st.subheader('Distância do sensor')
+    recent = history.tail(30).reset_index()
+    valid = recent.dropna(subset=['distance_cm'])
+    current = recent.iloc[-1]['distance_cm']
+    a, b, c = st.columns(3)
+    a.metric('Distância atual', f'{current:.1f} cm' if pd.notna(current) else '—')
+    b.metric('Média recente', f"{valid['distance_cm'].mean():.1f} cm" if not valid.empty else '—')
+    c.metric('Leituras com eco', f'{len(valid)} / {len(recent)}')
+    if valid.empty:
+        st.info('Sem distância disponível nas leituras recentes. Confira se o modo sensor está ativo e se há um alvo à frente.')
+        return
+    bars = alt.Chart(recent).mark_bar(color='#08968d', cornerRadiusEnd=3).encode(
+        x=alt.X('id:O', sort='ascending', axis=alt.Axis(title='Leituras recentes', labels=False, ticks=False)),
+        y=alt.Y('distance_cm:Q', title='Distância (cm)', scale=alt.Scale(zero=True)),
+        tooltip=[
+            alt.Tooltip('recebido_em:N', title='Horário (UTC)'),
+            alt.Tooltip('distance_cm:Q', title='Distância (cm)', format='.1f'),
+        ],
+    ).properties(height=224)
+    st.altair_chart(bars, use_container_width=True)
+    st.caption('Até 30 amostras. Lacunas indicam ausência de leitura. A média usa somente leituras com eco.')
 
 @st.fragment(run_every='2s')
 def live():
@@ -49,6 +73,8 @@ def live():
     d.metric('Contador de diagnóstico',last['diagnostic_count'] if last else '—')
     if last:
         st.caption(f"ESP32 informa: {last['pending_count']} pendentes · fila HTTP: {last['queue_size']} · uptime: {last['uptime_ms']//1000} s")
+        history=pd.DataFrame(data['telemetry']).sort_values('id').set_index('id')
+        show_distance(history)
     st.subheader('Comando remoto')
     st.write('Zerar o contador de detecções da sessão. Preserva depósitos pendentes, confirmações e auditoria.')
     if 'command_request_id' not in st.session_state: st.session_state.command_request_id=str(uuid4())
@@ -63,12 +89,9 @@ def live():
     st.dataframe(pd.DataFrame(data['commands']),hide_index=True,use_container_width=True)
     left,right=st.columns(2)
     with left:
-        st.subheader('Histórico da telemetria')
+        st.subheader('Histórico da contagem')
         if last:
-            history=pd.DataFrame(data['telemetry']).sort_values('id').set_index('id')
             st.line_chart(history[['diagnostic_count','pending_count']])
-            if last['distance_cm'] is not None: st.metric('Distância (cm)',last['distance_cm'])
-            else: st.caption('Distância não informada: modo botão ou leitura sem eco.')
     with right:
         st.subheader('Últimos eventos persistidos')
         st.dataframe(pd.DataFrame(data['events']),hide_index=True,use_container_width=True)

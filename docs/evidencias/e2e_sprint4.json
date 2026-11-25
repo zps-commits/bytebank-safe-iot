@@ -10,7 +10,7 @@
     {
       "step": "streamlit_button",
       "command": {
-        "command_id": "9c13f51b-0a26-4978-9551-ed8b58ba51cd",
+        "command_id": "3bacddc0-3183-4488-bb01-5014bedff5f5",
         "device_id": "test-safe",
         "action": "reset_counter"
       },
@@ -18,7 +18,10 @@
         "Pendentes no banco": "0",
         "Confirmados no banco": "1",
         "Cancelados no banco": "1",
-        "Contador de diagnóstico": "2"
+        "Contador de diagnóstico": "2",
+        "Distância atual": "—",
+        "Média recente": "—",
+        "Leituras com eco": "0 / 1"
       }
     },
     {
@@ -34,5 +37,5 @@
     }
   ],
   "result": "PASSOU",
-  "time_utc": "2026-11-25T17:17:21.367082+00:00"
+  "time_utc": "2026-11-25T19:37:57.165365+00:00"
 }
