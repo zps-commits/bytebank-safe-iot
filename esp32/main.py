@@ -239,12 +239,34 @@ class DebouncedButton:
         return False
 
 
+class EnvelopeSensor:
+    """Confirma presença e retirada em amostras válidas consecutivas."""
+    def __init__(self):
+        self.occupied = False
+        self.streak = 0
+
+    def detected(self, distance):
+        if self.occupied:
+            self.streak = self.streak + 1 if distance is not None and distance > 12 else 0
+            if self.streak >= 3:
+                self.occupied = False
+                self.streak = 0
+            return False
+
+        self.streak = self.streak + 1 if distance is not None and 2 <= distance < 10 else 0
+        if self.streak < 5:
+            return False
+        self.occupied = True
+        self.streak = 0
+        return True
+
+
 def run():
     global latest_distance
     _thread.start_new_thread(network_worker, ())
     buttons = [DebouncedButton(pin) for pin in (BTN_ENVELOPE, BTN_CANCEL, BTN_CONFIRM)]
     last_sensor = time.ticks_ms()
-    occupied = False
+    sensor = EnvelopeSensor()
     print('ByteBank Safe iniciado | simulacao:', SIMULATE_ENVELOPE)
     print('HTTP habilitado:', getattr(config, 'HTTP_ENABLED', True))
     while True:
@@ -255,13 +277,7 @@ def run():
             last_sensor = now
             distance = medir_distancia_cm()
             latest_distance = distance
-            # Sem eco não rearma o sensor: evita duplicar envelope após timeout.
-            if distance is not None:
-                if distance < 10 and not occupied:
-                    detected = True
-                    occupied = True
-                elif distance > 12:
-                    occupied = False
+            detected = sensor.detected(distance)
         with state_lock:
             if detected:
                 registrar_envelope()
