@@ -45,6 +45,67 @@ def show_distance(history):
     st.altair_chart(bars, use_container_width=True)
     st.caption('Até 30 amostras. Lacunas indicam ausência de leitura. A média usa somente leituras com eco.')
 
+def show_operational_charts(history, counts):
+    recent = history.tail(30).copy()
+    recent['media_cm'] = recent['distance_cm'].rolling(5, min_periods=1).mean()
+    recent['media_cm'] = recent['media_cm'].where(recent['distance_cm'].notna())
+    st.subheader('Tendência da distância')
+    if recent['media_cm'].notna().any():
+        trend = alt.Chart(recent.reset_index()).mark_line(color='#117873', point=True).encode(
+            x=alt.X('id:O', title='Amostra'),
+            y=alt.Y('media_cm:Q', title='Média móvel (cm)'),
+            tooltip=['recebido_em:N', alt.Tooltip('media_cm:Q', format='.1f')],
+        ).properties(height=185)
+        st.altair_chart(trend, use_container_width=True)
+        st.caption('Média das últimas cinco amostras, usando as que têm eco.')
+    else:
+        st.caption('A tendência aparece quando o sensor recebe ecos.')
+
+    left, right = st.columns(2)
+    with left:
+        st.subheader('Fila de envio')
+        queue = alt.Chart(recent.reset_index()).mark_area(color='#427bd4', opacity=.55, line=True).encode(
+            x=alt.X('id:O', title='Amostra', axis=alt.Axis(labels=False)),
+            y=alt.Y('queue_size:Q', title='Eventos', scale=alt.Scale(domainMin=0, domainMax=max(1, int(recent['queue_size'].max())))),
+            tooltip=['recebido_em:N', 'queue_size:Q'],
+        ).properties(height=185)
+        st.altair_chart(queue, use_container_width=True)
+    with right:
+        st.subheader('Envelopes por estado')
+        states = pd.DataFrame({
+            'Estado': ['Pendentes', 'Confirmados', 'Cancelados'],
+            'Envelopes': [counts.get(state, 0) for state in ('pendente', 'confirmado', 'cancelado')],
+        })
+        outcomes = alt.Chart(states).mark_bar(cornerRadiusEnd=3).encode(
+            x=alt.X('Estado:N', sort=states['Estado'].tolist(), title=None),
+            y=alt.Y('Envelopes:Q', scale=alt.Scale(domainMin=0, domainMax=max(1, int(states['Envelopes'].max())))),
+            color=alt.Color('Estado:N', scale=alt.Scale(domain=states['Estado'].tolist(), range=['#d29236', '#08968d', '#64748b']), legend=None),
+            tooltip=['Estado:N', 'Envelopes:Q'],
+        ).properties(height=185)
+        st.altair_chart(outcomes, use_container_width=True)
+
+def show_device_health(history):
+    recent = history.tail(30).reset_index()
+    recent['uptime_s'] = recent['uptime_ms'] / 1000
+    recent['interval_s'] = pd.to_datetime(recent['recebido_em'], utc=True).diff().dt.total_seconds()
+    st.subheader('Saúde da ESP32')
+    uptime, interval = st.columns(2)
+    for column, field, title, color in (
+        (uptime, 'uptime_s', 'Tempo desde que ligou (s)', '#08776d'),
+        (interval, 'interval_s', 'Intervalo entre mensagens (s)', '#427bd4'),
+    ):
+        with column:
+            if not recent[field].notna().any():
+                st.caption('Aguardando a próxima amostra.')
+                continue
+            chart = alt.Chart(recent).mark_line(color=color, point=True).encode(
+                x=alt.X('id:O', title='Amostras recentes', axis=alt.Axis(labels=False)),
+                y=alt.Y(f'{field}:Q', title=title),
+                tooltip=[alt.Tooltip('recebido_em:N', title='Horário (UTC)'), alt.Tooltip(f'{field}:Q', title=title, format='.1f')],
+            ).properties(height=185)
+            st.altair_chart(chart, use_container_width=True)
+    st.caption('O tempo ligado ajuda a identificar reinícios. O intervalo mostra pausas entre chegadas à API.')
+
 @st.fragment(run_every='2s')
 def live():
     try:
@@ -75,6 +136,9 @@ def live():
         st.caption(f"ESP32 informa: {last['pending_count']} pendentes · fila HTTP: {last['queue_size']} · uptime: {last['uptime_ms']//1000} s")
         history=pd.DataFrame(data['telemetry']).sort_values('id').set_index('id')
         show_distance(history)
+        with st.expander('Mais gráficos de telemetria', expanded=True):
+            show_operational_charts(history, counts)
+        show_device_health(history)
     st.subheader('Comando remoto')
     st.write('Zerar o contador de detecções da sessão. Preserva depósitos pendentes, confirmações e auditoria.')
     if 'command_request_id' not in st.session_state: st.session_state.command_request_id=str(uuid4())
